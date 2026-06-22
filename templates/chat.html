@@ -1,81 +1,247 @@
-<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-
 <!DOCTYPE html>
-<html>
-	<head>
-		<title>Chatbot</title>
-		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css')}}"/>
-	</head>
-	
-	
-	<body>
-		<div class="container-fluid h-100">
-			<div class="row justify-content-center h-100">		
-				<div class="col-md-8 col-xl-6 chat">
-					<div class="card">
-						<div class="card-header msg_head">
-							<div class="d-flex bd-highlight">
-								<div class="img_cont">
-									<img src="https://cdn-icons-png.flaticon.com/512/387/387569.png" class="rounded-circle user_img">
-									<!-- <img src="https://www.prdistribution.com/spirit/uploads/pressreleases/2019/newsreleases/d83341deb75c4c4f6b113f27b1e42cd8-chatbot-florence-already-helps-thousands-of-patients-to-remember-their-medication.png" class="rounded-circle user_img"> -->
-									<span class="online_icon"></span>
-								</div>
-								<div class="user_info">
-									<span>Medical Chatbot</span>
-									<p>Ask me anything!</p>
-								</div>
-							</div>
-						</div>
-						<div id="messageFormeight" class="card-body msg_card_body">
-							
-							
-						</div>
-						<div class="card-footer">
-							<form id="messageArea" class="input-group">
-                                <input type="text" id="text" name="msg" placeholder="Type your message..." autocomplete="off" class="form-control type_msg" required/>
-								<div class="input-group-append">
-									<button type="submit" id="send" class="input-group-text send_btn"><i class="fas fa-location-arrow"></i></button>
-								</div>
-							</form>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-		
-		<script>
-			$(document).ready(function() {
-				$("#messageArea").on("submit", function(event) {
-					const date = new Date();
-					const hour = date.getHours();
-					const minute = date.getMinutes();
-					const str_time = hour+":"+minute;
-					var rawText = $("#text").val();
+<html lang="en">
+<head>
+    <title>Medical AI Assistant</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-					var userHtml = '<div class="d-flex justify-content-end mb-4"><div class="msg_cotainer_send">' + rawText + '<span class="msg_time_send">'+ str_time + '</span></div><div class="img_cont_msg"><img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg"></div></div>';
-					
-					$("#text").val("");
-					$("#messageFormeight").append(userHtml);
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-					$.ajax({
-						data: {
-							msg: rawText,	
-						},
-						type: "POST",
-						url: "/get",
-					}).done(function(data) {
-						var botHtml = '<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="https://cdn-icons-png.flaticon.com/512/387/387569.png" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' + data + '<span class="msg_time">' + str_time + '</span></div></div>';
-						$("#messageFormeight").append($.parseHTML(botHtml));
-					});
-					event.preventDefault();
-				});
-			});
-		</script>
-        
-    </body>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+
+<body>
+
+    <!-- NAV BAR -->
+    <nav class="top-nav">
+        <div class="nav-content">
+            <div class="nav-brand">
+                <div class="brand-icon">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <span class="brand-text">MedAI</span>
+                <span class="brand-badge">PRO</span>
+            </div>
+            <div class="nav-actions">
+                <button class="nav-btn" id="clearChat" title="New Chat">
+                    <i class="fas fa-redo-alt"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="chat-main">
+
+        <!-- MESSAGES -->
+        <div class="messages-container" id="messageFormeight">
+
+            <!-- WELCOME -->
+            <div class="welcome-screen" id="welcomeScreen">
+                <div class="welcome-icon">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <h1 class="welcome-title">Medical AI Assistant</h1>
+                <p class="welcome-subtitle">
+                    I can help you understand symptoms, conditions, medications,
+                    and general health information.
+                </p>
+                <div class="suggestion-chips">
+                    <button class="chip" data-msg="What are the symptoms of diabetes?">
+                        <i class="fas fa-notes-medical"></i>
+                        Symptoms of diabetes
+                    </button>
+                    <button class="chip" data-msg="How can I lower my blood pressure naturally?">
+                        <i class="fas fa-heartbeat"></i>
+                        Lower blood pressure
+                    </button>
+                    <button class="chip" data-msg="What are common cold remedies?">
+                        <i class="fas fa-pills"></i>
+                        Cold remedies
+                    </button>
+                    <button class="chip" data-msg="Explain the importance of sleep">
+                        <i class="fas fa-bed"></i>
+                        Importance of sleep
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- INPUT -->
+        <div class="input-area">
+            <div class="input-wrapper">
+                <form id="messageArea" class="input-form">
+                    <div class="input-container">
+                        <textarea
+                            id="text"
+                            name="msg"
+                            placeholder="Ask me a medical question..."
+                            autocomplete="off"
+                            class="chat-input"
+                            rows="1"
+                            required></textarea>
+                        <button type="submit" id="send" class="send-button" disabled>
+                            <i class="fas fa-arrow-up"></i>
+                        </button>
+                    </div>
+                </form>
+                <p class="disclaimer">
+                    MedAI can make mistakes. This is not a substitute for professional medical advice.
+                </p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        $(document).ready(function () {
+
+            var textarea = document.getElementById('text');
+            var sendBtn = document.getElementById('send');
+
+            // Auto resize textarea
+            textarea.addEventListener('input', function () {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+                sendBtn.disabled = !this.value.trim();
+            });
+
+            function scrollToBottom() {
+                var c = document.getElementById('messageFormeight');
+                setTimeout(function () {
+                    c.scrollTop = c.scrollHeight;
+                }, 50);
+            }
+
+            function hideWelcome() {
+                $('#welcomeScreen').fadeOut(200);
+            }
+
+            function showTyping() {
+                var id = 'typing_' + Date.now();
+                var html =
+                    '<div class="message-row bot-row" id="' + id + '">' +
+                        '<div class="avatar bot-avatar"><i class="fas fa-plus"></i></div>' +
+                        '<div class="message-bubble bot-bubble typing-bubble">' +
+                            '<div class="typing-dots"><span></span><span></span><span></span></div>' +
+                        '</div>' +
+                    '</div>';
+                $('#messageFormeight').append(html);
+                scrollToBottom();
+                return id;
+            }
+
+            function hideTyping(id) {
+                $('#' + id).remove();
+            }
+
+            function escapeHtml(text) {
+                var div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            function appendUser(text) {
+                var html =
+                    '<div class="message-row user-row">' +
+                        '<div class="message-bubble user-bubble">' +
+                            escapeHtml(text) +
+                        '</div>' +
+                    '</div>';
+                $('#messageFormeight').append(html);
+                scrollToBottom();
+            }
+
+            function appendBot(text) {
+                var html =
+                    '<div class="message-row bot-row">' +
+                        '<div class="avatar bot-avatar"><i class="fas fa-plus"></i></div>' +
+                        '<div class="message-bubble bot-bubble">' +
+                            '<div class="bot-text">' + text + '</div>' +
+                        '</div>' +
+                    '</div>';
+                $('#messageFormeight').append($.parseHTML(html));
+                scrollToBottom();
+            }
+
+            function appendError() {
+                var html =
+                    '<div class="message-row bot-row">' +
+                        '<div class="avatar bot-avatar error-avatar"><i class="fas fa-exclamation"></i></div>' +
+                        '<div class="message-bubble bot-bubble error-bubble">' +
+                            'Something went wrong. Please try again.' +
+                        '</div>' +
+                    '</div>';
+                $('#messageFormeight').append(html);
+                scrollToBottom();
+            }
+
+            function sendMessage(text) {
+                if (!text.trim()) return;
+
+                hideWelcome();
+                appendUser(text);
+
+                textarea.value = '';
+                textarea.style.height = 'auto';
+                sendBtn.disabled = true;
+
+                var typingId = showTyping();
+
+                $.ajax({
+                    data: { msg: text },
+                    type: 'POST',
+                    url: '/get',
+                    success: function (data) {
+                        hideTyping(typingId);
+                        appendBot(data);
+                    },
+                    error: function () {
+                        hideTyping(typingId);
+                        appendError();
+                    }
+                });
+            }
+
+            // Form submit
+            $('#messageArea').on('submit', function (e) {
+                e.preventDefault();
+                sendMessage($('#text').val());
+            });
+
+            // Enter key
+            textarea.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (this.value.trim()) {
+                        sendMessage(this.value);
+                    }
+                }
+            });
+
+            // Suggestion chips
+            $('.chip').on('click', function () {
+                sendMessage($(this).data('msg'));
+            });
+
+            // Clear chat
+            $('#clearChat').on('click', function () {
+                $('#messageFormeight').children(':not(#welcomeScreen)').remove();
+                $('#welcomeScreen').fadeIn(200);
+            });
+
+        });
+    </script>
+
+</body>
 </html>
