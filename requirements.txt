@@ -9,3 +9,4 @@ sentence-transformers==5.4.1
 pypdf==6.10.2
 python-dotenv==1.0.1
 faiss-cpu==1.13.2
+gunicorn
